@@ -1,0 +1,49 @@
+name: ML CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Ruff
+        run: |
+          ruff check src tests scripts
+
+      - name: Train model
+        run: |
+          python src/train.py
+
+      - name: Run tests
+        run: |
+          pytest tests -v
+
+      - name: Validate model performance
+        env:
+          F1_THRESHOLD: "0.60"
+        run: |
+          python scripts/validate_model.py
+
+      - name: Build Docker image
+        run: |
+          docker build -t heatwave-ml-cicd:${{ github.sha }} .

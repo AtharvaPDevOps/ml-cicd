@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heatwave Monitoring & Prediction</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f4f6f8;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 9px;
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .healthy {
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Heatwave Monitoring & Prediction</h1>
+    <p class="subtitle">
+        Machine-learning based next-day heatwave prediction for Rajasthan
+    </p>
+
+    <div class="card">
+        <h2>Weather Information</h2>
+
+        <form id="predictionForm">
+
+            <div class="grid">
+
+                <div>
+                    <label>District</label>
+                    <select id="DISTRICT">
+                        <option>Barmer</option>
+                        <option>Bikaner</option>
+                        <option>Churu</option>
+                        <option>Jaipur</option>
+                        <option>Jaisalmer</option>
+                        <option>Jodhpur</option>
+                        <option>Kota</option>
+                        <option>Nagaur</option>
+                        <option>Sri Ganganagar</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Year</label>
+                    <input id="YEAR" type="number" value="2025">
+                </div>
+
+                <div>
+                    <label>Month</label>
+                    <input id="MONTH" type="number" min="1" max="12" value="6">
+                </div>
+
+                <div>
+                    <label>Day</label>
+                    <input id="DAY" type="number" min="1" max="31" value="15">
+                </div>
+
+                <div>
+                    <label>Wind U10</label>
+                    <input id="WIND_U10" type="number" step="any" value="0">
+                </div>
+
+                <div>
+                    <label>Wind V10</label>
+                    <input id="WIND_V10" type="number" step="any" value="0">
+                </div>
+
+                <div>
+                    <label>MSLP</label>
+                    <input id="MSLP" type="number" step="any" value="1000">
+                </div>
+
+                <div>
+                    <label>BLH</label>
+                    <input id="BLH" type="number" step="any" value="500">
+                </div>
+
+                <div>
+                    <label>GEOP</label>
+                    <input id="GEOP" type="number" step="any" value="0">
+                </div>
+
+                <div>
+                    <label>TEMP2M</label>
+                    <input id="TEMP2M" type="number" step="any" value="35">
+                </div>
+
+                <div>
+                    <label>TMAX</label>
+                    <input id="TMAX" type="number" step="any" value="42">
+                </div>
+
+                <div>
+                    <label>TMIN</label>
+                    <input id="TMIN" type="number" step="any" value="28">
+                </div>
+
+                <div>
+                    <label>DEW2M</label>
+                    <input id="DEW2M" type="number" step="any" value="20">
+                </div>
+
+                <div>
+                    <label>CLOUD</label>
+                    <input id="CLOUD" type="number" step="any" value="20">
+                </div>
+
+                <div>
+                    <label>RAIN</label>
+                    <input id="RAIN" type="number" step="any" value="0">
+                </div>
+
+                <div>
+                    <label>SRAD</label>
+                    <input id="SRAD" type="number" step="any" value="300">
+                </div>
+
+                <div>
+                    <label>EVAP</label>
+                    <input id="EVAP" type="number" step="any" value="5">
+                </div>
+
+                <div>
+                    <label>SOILT1</label>
+                    <input id="SOILT1" type="number" step="any" value="30">
+                </div>
+
+                <div>
+                    <label>SOILM1</label>
+                    <input id="SOILM1" type="number" step="any" value="0.2">
+                </div>
+
+                <div>
+                    <label>LAI</label>
+                    <input id="LAI" type="number" step="any" value="0.5">
+                </div>
+
+                <div>
+                    <label>Latitude</label>
+                    <input id="LAT" type="number" step="any" value="25.75">
+                </div>
+
+                <div>
+                    <label>Longitude</label>
+                    <input id="LON" type="number" step="any" value="71.5">
+                </div>
+
+            </div>
+
+            <button type="submit">Predict Heatwave</button>
+
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <div class="card">
+        <h3>API Status</h3>
+        <p id="health">Checking API...</p>
+    </div>
+
+<script>
+
+const fields = [
+    "WIND_U10", "WIND_V10", "MSLP", "BLH", "GEOP",
+    "TEMP2M", "TMAX", "TMIN", "DEW2M", "CLOUD",
+    "RAIN", "SRAD", "EVAP", "SOILT1", "SOILM1",
+    "LAI", "LAT", "LON", "YEAR", "MONTH", "DAY"
+];
+
+document
+    .getElementById("predictionForm")
+    .addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const data = {
+            DISTRICT: document.getElementById("DISTRICT").value
+        };
+
+        fields.forEach(field => {
+            data[field] = Number(document.getElementById(field).value);
+        });
+
+        const result = document.getElementById("result");
+
+        try {
+
+            const response = await fetch("/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const prediction = await response.json();
+
+            if (!response.ok) {
+                throw new Error(prediction.detail || "Prediction failed");
+            }
+
+            const probability =
+                (prediction.heatwave_probability * 100).toFixed(2);
+
+            result.style.display = "block";
+
+            if (prediction.heatwave_prediction === 1) {
+                result.innerHTML =
+                    "<strong>?? Heatwave predicted</strong><br>" +
+                    "Probability: " + probability + "%";
+            } else {
+                result.innerHTML =
+                    "<strong>Normal conditions predicted</strong><br>" +
+                    "Heatwave probability: " + probability + "%";
+            }
+
+        } catch (error) {
+
+            result.style.display = "block";
+            result.innerHTML = "Error: " + error.message;
+
+        }
+    });
+
+
+async function checkHealth() {
+
+    try {
+
+        const response = await fetch("/health");
+
+        if (response.ok) {
+            document.getElementById("health").innerHTML =
+                "API Status: <span class='healthy'>Healthy</span>";
+        } else {
+            throw new Error();
+        }
+
+    } catch {
+        document.getElementById("health").innerText =
+            "API Status: Unavailable";
+    }
+}
+
+checkHealth();
+
+</script>
+
+</body>
+</html>
