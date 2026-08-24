@@ -13,7 +13,7 @@ model = joblib.load(MODEL_PATH)
 
 app = FastAPI(title="Heatwave Prediction API")
 
-
+#CI-CD
 class WeatherInput(BaseModel):
     WIND_U10: float
     WIND_V10: float
